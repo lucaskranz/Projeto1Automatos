@@ -51,7 +51,7 @@ namespace Projeto1Console
 
         public void GerarAutomato()
         {
-            System.IO.StreamReader file = new System.IO.StreamReader(@"D:\Projetos\Projeto1 - Automatos\Projeto1Console\entrada.txt");
+            System.IO.StreamReader file = new System.IO.StreamReader(@"D:\Projetos\Projeto1Automatos\Projeto1Console\entrada.txt");
             
             while ((linha.texto = file.ReadLine()) != null)
             {
@@ -68,17 +68,18 @@ namespace Projeto1Console
                     counter++;
                 }
             }
+            estados.Add(new Estado(nome:"X", inicial:false, final:true));
             file.Close();
         }
 
         public void criarTokens()
         {
             if (linha.texto[counter] == ';')
-                AutomatoTabela.Add(new AutomatoTabela(token: "", estadoOrigem: estados[estados.Count-1], estadoDestino: null));
-            else if(AutomatoTabela.Count == 0 || counter == 0)
-                AutomatoTabela.Add(new AutomatoTabela(token: linha.texto[counter].ToString(), estadoOrigem: CriarEstadosTokens(origem:true), estadoDestino: CriarEstadosTokens(origem:false)));
+                return;
+            else if (AutomatoTabela.Count == 0 || counter == 0)
+                AutomatoTabela.Add(new AutomatoTabela(token: linha.texto[counter].ToString(), estadoOrigem: CriarEstadosTokens(origem: true), estadoDestino: CriarEstadosTokens(origem: false)));
             else
-                AutomatoTabela.Add(new AutomatoTabela(token: linha.texto[counter].ToString(), estadoOrigem: AutomatoTabela[AutomatoTabela.Count-1].estadoDestino, estadoDestino: CriarEstadosTokens(origem: false)));
+                AutomatoTabela.Add(new AutomatoTabela(token: linha.texto[counter].ToString(), estadoOrigem: AutomatoTabela[AutomatoTabela.Count - 1].estadoDestino, estadoDestino: CriarEstadosTokens(origem: false)));
             
             if (!ExisteToken(linha.texto[counter].ToString()) && linha.texto[counter] != ';')
                 tokens.Add(linha.texto[counter].ToString());
@@ -114,7 +115,7 @@ namespace Projeto1Console
         {
             int index, aux = 0;
             string token  = "";
-            string estado = "";
+            Estado estado = new Estado(null, false, false);
             
             if (counter == 0)
             {
@@ -125,9 +126,9 @@ namespace Projeto1Console
                 }
                 linha.estadoOrigem = CriarEstadosGramatica(linha.texto.Substring(counter + 1, index - 1));
             }
-            else if(linha.texto[counter] == '=')
+            else if(linha.texto[counter] == '=' || linha.texto[counter] == '|')
             {
-                for (index = 1; index < linha.texto.Length; index++)
+                for (index = 1; (index + counter) < linha.texto.Length; index++)
                 {
                     if ((linha.texto[counter + index] == '<') && (aux == 0))
                     {
@@ -139,47 +140,30 @@ namespace Projeto1Console
                     {
                         if (linha.texto[aux + index] == '>')
                         {
-                            estado = (linha.texto.Substring(aux + 1, index - 1));
+                            estado = new Estado(nome: linha.texto.Substring(aux + 1, index - 1), inicial: false, final: false);
                             break;
                         }
                     }
-                }
-                AutomatoTabela.Add(new AutomatoTabela(token: token, estadoOrigem: linha.estadoOrigem, estadoDestino: CriarEstadosGramatica(estado)));
-
-                if (!ExisteToken(token) && linha.texto[counter] != ';' && linha.texto[counter] != '|')
-                    tokens.Add(linha.texto[counter].ToString());
-            }
-            else if(linha.texto[counter] == '|')
-            {
-                for (index = 1; index < linha.texto.Length; index++)
-                {
-                    if (linha.texto[counter + index] == '&')
-                        return;
-
-                    if((linha.texto[counter + index] == '<') && (aux == 0))
+                    else if (linha.texto[counter + index] == '|')
                     {
                         token = linha.texto.Substring(counter + 1, index - 1);
-                        aux = counter + index;
-                        index = 0;
-                    }
-                    else if (aux != 0)
-                    {
-                        if (linha.texto[aux + index] == '>')
-                        {
-                            estado = (linha.texto.Substring(aux + 1, index - 1));
-                            break;
-                        }
+                        estado = CriarEstadosTokens(false);
+                        break;
                     }
                 }
-                AutomatoTabela.Add(new AutomatoTabela(token: token, estadoOrigem: linha.estadoOrigem, estadoDestino: CriarEstadosGramatica(estado)));
+                if(! string.IsNullOrEmpty(token)) 
+                    AutomatoTabela.Add(new AutomatoTabela(token: token, estadoOrigem: linha.estadoOrigem, estadoDestino: estado));
 
-                if (!ExisteToken(token) && linha.texto[counter] != ';' && linha.texto[counter] != '|')
-                    tokens.Add(linha.texto[counter].ToString());
+                if (! ExisteToken(token))
+                    tokens.Add(token);
             }
         }
 
         public bool ExisteToken(string token)
         {
+            if (token.Equals('|') || token.Equals(';') || token.Equals('=') || string.IsNullOrEmpty(token))
+                return true;
+
             for (int i = 0; i < tokens.Count; i++)
                 if (tokens[i].Equals(token))
                     return true;
@@ -201,7 +185,6 @@ namespace Projeto1Console
 
             return (new Estado(nome: estado, inicial: false, final: false));
         }
-
     }
 
     class Program
@@ -210,7 +193,7 @@ namespace Projeto1Console
         {
             Automato aut = new Automato();
             aut.GerarAutomato();
-            int numEstados = aut.estados.Count + 2, numTokens = aut.tokens.Count + 2;
+            int numEstados = aut.estados.Count + 1, numTokens = aut.tokens.Count + 2;
             string estadoDestino, estadoOrigem;
             string token, estado;
 
@@ -235,8 +218,6 @@ namespace Projeto1Console
                         {
                             if (linha <= aut.estados.Count)
                                 matriz[linha, col] = aut.estados[linha - 1].nome;
-                            else
-                                matriz[linha, col] = "X";
                         }
                         else
                         {
@@ -257,20 +238,28 @@ namespace Projeto1Console
                                 }
                             }                            
                         }
-                    }
+                    } 
                 }
             }
+
             string texto = "";
             for (int linha = 0; linha < numEstados; linha++)
             {
                 texto = "";
                 for (int col = 0; col < numTokens; col++)
                 {
-                    texto += matriz[linha,col] + ",";
+                    if (linha == 0)
+                        texto += " |" + matriz[linha, col] + "| ";
+                    else
+                        if (matriz[linha, col].Length > 1)
+                            texto += " " + matriz[linha, col] + "  ";
+                        else
+                            texto += "  " + matriz[linha, col] + "  ";
                 }
                 System.Console.WriteLine(texto);
             }
-           /* for (int i = 0; i < aut.AutomatoTabela.Count; i++)
+
+            for (int i = 0; i < aut.AutomatoTabela.Count; i++)
             {
                 if (aut.AutomatoTabela[i].estadoDestino == null)
                     estadoDestino = "-";
@@ -285,7 +274,7 @@ namespace Projeto1Console
                 System.Console.WriteLine("| token: " + aut.AutomatoTabela[i].token +
                                          "| estadoOrigem: " + estadoOrigem + 
                                          "| estadoDestino: " + estadoDestino);
-            }*/
+            }
 
             System.Console.ReadLine();
         }
