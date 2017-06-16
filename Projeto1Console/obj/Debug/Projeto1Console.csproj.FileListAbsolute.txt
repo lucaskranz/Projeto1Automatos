@@ -1,0 +1,6 @@
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\bin\Debug\Projeto1Console.exe.config
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\obj\Debug\Projeto1Console.csprojResolveAssemblyReference.cache
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\bin\Debug\Projeto1Console.exe
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\bin\Debug\Projeto1Console.pdb
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\obj\Debug\Projeto1Console.exe
+D:\Projetos\Projeto1 - Automatos\Projeto1Console\obj\Debug\Projeto1Console.pdb
