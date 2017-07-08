@@ -1,0 +1,11 @@
+* executavel na pasta bin/object
+* arquivo de entrada.txt deve estar na mesma pasta do executavel
+* saida.txt será gerada na mesma pasta do executavel
+
+se; *** deve ser sempre finalizado por ponto e virgula ;
+entao;
+<S>::=a<A>|a<B>|a|c<S>|c|&| *** sempre finalizado por |
+<A>::=a<S>|b|b<C>|c<A>|
+<B>::=a<A>|c<B>|c<S>|
+<C>::=a<S>|c<A>|c<C>|&| *** épsolon representado por &
+senao; *** não deve haver linhas em branco
